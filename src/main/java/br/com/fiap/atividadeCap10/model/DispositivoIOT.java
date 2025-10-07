@@ -17,11 +17,8 @@ public class DispositivoIOT {
             allocationSize = 1
     )
     private Long id;
-
     private String nome;
-
     public String modelo;
-
     public String fabricante;
 
 
