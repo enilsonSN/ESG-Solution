@@ -16,6 +16,7 @@ public class DispositivoIOT {
             sequenceName = "DISPOSITIVO_IOT_SEQ",
             allocationSize = 1
     )
+
     private Long id;
     private String nome;
     public String modelo;
