@@ -1,0 +1,33 @@
+# =========================
+# Etapa 1: Build com Maven
+# =========================
+FROM maven:3.9.8-eclipse-temurin-21 AS build
+
+# Cria o diretório da aplicação
+WORKDIR /opt/app
+
+# Copia todo o projeto para dentro do contêiner
+COPY . .
+
+# Executa o build (gera o .jar dentro de /target)
+RUN mvn clean package -DskipTests
+
+# =========================
+# Etapa 2: Imagem final (leve)
+# =========================
+FROM eclipse-temurin:21-jre-alpine
+
+# Cria diretório da aplicação
+WORKDIR /opt/app
+
+# Copia apenas o jar gerado do estágio de build
+COPY --from=build /opt/app/target/*.jar app.jar
+
+# Define a variável de ambiente para controlar o profile
+ENV PROFILE=prd
+
+# Expõe a porta padrão da aplicação
+EXPOSE 8080
+
+# Define o comando de entrada
+ENTRYPOINT ["java", "-Dspring.profiles.active=${PROFILE}", "-jar", "app.jar"]

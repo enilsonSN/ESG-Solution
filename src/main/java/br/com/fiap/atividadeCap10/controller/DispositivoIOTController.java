@@ -4,8 +4,10 @@ import br.com.fiap.atividadeCap10.dto.DispositivoIOTCadastroDto;
 import br.com.fiap.atividadeCap10.dto.DispositivoIOTDto;
 import br.com.fiap.atividadeCap10.model.DispositivoIOT;
 import br.com.fiap.atividadeCap10.service.DispositivoIOTService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +22,9 @@ public class DispositivoIOTController {
 
     @PostMapping("/dispositivo")
     @ResponseStatus(HttpStatus.CREATED)
-    public DispositivoIOTDto cadastrarDispositivo(DispositivoIOTCadastroDto dispositivoIOTCadastroDto){
-        return service.cadastrarDispositivo(dispositivoIOTCadastroDto);
+    public ResponseEntity<DispositivoIOTDto> cadastrarDispositivo(@RequestBody @Valid DispositivoIOTCadastroDto dispositivoIOTCadastroDto){
+        DispositivoIOTDto dispositivoIOTDto = service.cadastrarDispositivo(dispositivoIOTCadastroDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dispositivoIOTDto);
     }
 
     @GetMapping("/dispositivo/{id}")
