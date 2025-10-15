@@ -24,7 +24,14 @@ jobs:
           cache: maven
 
       - name: ⚙️ Build e Testes
-        run: mvn clean verify --batch-mode
+        run: mvn clean package --batch-mode
+
+      - name: 📦 Upload do JAR como Artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: spring-boot-app
+
+          path: target/*.jar
 
   deploy-staging:
     name: 🚀 Deploy para Staging (Azure)
@@ -36,16 +43,17 @@ jobs:
       - name: 🔹 Checkout do código
         uses: actions/checkout@v4
 
-      - name: ☕ Configurar JDK 21
-        uses: actions/setup-java@v4
+      - name: ⬇️ Download do JAR Artefato
+        uses: actions/download-artifact@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          name: spring-boot-app
+          path: target/
 
       - name: 🐳 Build & Push Imagem Docker (staging)
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker build -t esg-solution/esg-solution:staging .
+          # O JAR está em target/, então o Dockerfile encontrará!
+          docker build -t esg-solution/esg-solution:staging . 
           docker push esg-solution/esg-solution:staging
 
       - name: 🔐 Login no Azure
@@ -73,29 +81,20 @@ jobs:
       - name: 🔹 Checkout do código
         uses: actions/checkout@v4
 
-      - name: ☕ Configurar JDK 21
-        uses: actions/setup-java@v4
+      - name: ⬇️ Download do JAR Artefato
+        uses: actions/download-artifact@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          name: spring-boot-app
+          path: target/
 
       - name: 🐳 Build & Push Imagem Docker (prod)
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          # O JAR está em target/, então o Dockerfile encontrará!
           docker build -t esg-solution/esg-solution:latest .
           docker push esg-solution/esg-solution:latest
 
       - name: 🔐 Login no Azure
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: 🔁 Atualizar App Service (produção)
-        run: |
-          az webapp config container set \
-            --name esg-solution \
-            --resource-group rs-fiap-on \
-            --docker-custom-image-name esg-solution/esg-solution:latest
-          az webapp restart \
-            --name esg-solution \
-            --resource-group rs-fiap-on
+          creds: ${{ secrets.AZURE_
